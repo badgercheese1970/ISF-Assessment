@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "phoenix-education-123"
+  },
+  "targets": {
+    "phoenix-education-123": {
+      "hosting": {
+        "assess": [
+          "isf-assess"
+        ]
+      }
+    }
+  }
+}

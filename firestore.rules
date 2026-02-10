@@ -1,0 +1,27 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Read-only access to existing shared collections
+    match /send_local_authorities/{document=**} {
+      allow read: if true; // In prod, restrict to auth users
+      allow write: if false;
+    }
+    match /independent_schools/{document=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /isochrone_cache/{document=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // New app-specific collections
+    match /assess_reports/{document=**} {
+      allow read, write: if true; // Restrict in production
+    }
+    match /assess_users/{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
