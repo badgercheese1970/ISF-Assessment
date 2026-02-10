@@ -29,6 +29,14 @@ export interface GIASSchool {
   SENNoStat: string;
   Section41Approved: string;
   InspectorateName: string;
+  OfstedRating?: string;
+  OfstedLastInsp?: string;
+  QualityOfEducation?: string;
+  BehaviourAndAttitudes?: string;
+  PersonalDevelopment?: string;
+  EffectivenessOfLeadership?: string;
+  EarlyYearsProvision?: string;
+  SixthFormProvision?: string;
   PropsName: string;
   UrbanRural: string;
   DistrictAdministrative: string;
@@ -78,6 +86,14 @@ function mapFirestoreDocToGIAS(data: Record<string, any>): GIASSchool {
     SENNoStat: String(data.sen_no_ehcp || data.SENNoStat || '0'),
     Section41Approved: data.section41 || data.Section41Approved || '',
     InspectorateName: data.inspectorate || data.InspectorateName || '',
+    OfstedRating: data.ofsted_rating || data.OfstedRating || data.overall_effectiveness || '',
+    OfstedLastInsp: data.ofsted_last_insp || data.OfstedLastInsp || data.last_inspection_date || '',
+    QualityOfEducation: data.quality_of_education || data.QualityOfEducation || '',
+    BehaviourAndAttitudes: data.behaviour_and_attitudes || data.BehaviourAndAttitudes || '',
+    PersonalDevelopment: data.personal_development || data.PersonalDevelopment || '',
+    EffectivenessOfLeadership: data.effectiveness_of_leadership || data.EffectivenessOfLeadership || '',
+    EarlyYearsProvision: data.early_years_provision || data.EarlyYearsProvision || '',
+    SixthFormProvision: data.sixth_form_provision || data.SixthFormProvision || '',
     PropsName: data.proprietor || data.PropsName || '',
     UrbanRural: data.urban_rural || data.UrbanRural || '',
     DistrictAdministrative: data.district || data.DistrictAdministrative || '',

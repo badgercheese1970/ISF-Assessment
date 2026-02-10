@@ -14,6 +14,7 @@ export interface ScoringResult {
 
 const CRITERIA_TEMPLATE = [
   { name: "Commissioning Demand", weight: 3 },
+  { name: "Ofsted Rating", weight: 2 },
   { name: "Financial Health", weight: 2 },
   { name: "Building Condition", weight: 2 },
   { name: "Staffing/Leadership", weight: 2 },

@@ -14,9 +14,11 @@
 
 import { getSchoolByUrn, getLocalAuthorityByName, type SchoolData } from './send-insights';
 import { getCompanyProfileByUrn, getOfficersByUrn } from './companies-house';
+import { searchSchools, type GIASSchool } from './gias';
 
 export interface AssessmentData {
   school: SchoolData | null;
+  gias: GIASSchool | null;
   la: any | null;
   company: any | null;
   officers: any | null;
@@ -34,6 +36,7 @@ export interface AutoScore {
 
 export interface AutoScores {
   commissioningDemand: AutoScore;
+  ofstedRating: AutoScore;
   financialHealth: AutoScore;
   buildingCondition: AutoScore;
   staffingLeadership: AutoScore;
@@ -50,6 +53,7 @@ function emptyScore(): AutoScore {
 export function emptyScores(): AutoScores {
   return {
     commissioningDemand: emptyScore(),
+    ofstedRating: emptyScore(),
     financialHealth: emptyScore(),
     buildingCondition: emptyScore(),
     staffingLeadership: emptyScore(),
@@ -97,6 +101,91 @@ function scoreCommissioningDemand(_school: SchoolData, la: any): AutoScore {
   const rationale = score !== null
     ? `Based on ${awaiting || '?'} unplaced learners and Pool ${pool || '?'} LA classification.`
     : 'Insufficient data for auto-scoring.';
+
+  return { score, confidence, rationale, dataPoints };
+}
+
+// ─── Ofsted Rating & Regulatory Standing ────────────────────────
+function scoreOfstedRating(school: SchoolData, giasData?: any): AutoScore {
+  const dataPoints: string[] = [];
+  const pillarDetails = school?.pillar_details as any;
+  const p3 = pillarDetails?.pillar3;
+
+  // Get Ofsted data from GIAS or school data
+  const ofstedRating = giasData?.OfstedRating || (school as any)?.ofsted_rating || '';
+  const ofstedDate = giasData?.OfstedLastInsp || (school as any)?.last_inspection_date || '';
+  const inspectorate = giasData?.InspectorateName || (school as any)?.inspectorate || '';
+
+  // Check for no Ofsted data flag
+  const noOfstedData = p3?.no_ofsted_data;
+
+  if (noOfstedData) {
+    dataPoints.push('No Ofsted data (likely ISI-inspected)');
+    return {
+      score: 3,
+      confidence: 'MEDIUM',
+      rationale: 'Independent school inspected by ISI rather than Ofsted. Assumed acceptable regulatory standing.',
+      dataPoints
+    };
+  }
+
+  if (inspectorate) {
+    dataPoints.push(`Inspectorate: ${inspectorate}`);
+  }
+
+  if (ofstedRating) {
+    dataPoints.push(`Ofsted Rating: ${ofstedRating}`);
+  }
+
+  if (ofstedDate) {
+    dataPoints.push(`Last Inspection: ${ofstedDate}`);
+  }
+
+  // Score based on Ofsted rating
+  let score: number | null = null;
+  let confidence: AutoScore['confidence'] = 'MANUAL';
+
+  if (ofstedRating) {
+    const rating = ofstedRating.toLowerCase();
+
+    if (rating.includes('outstanding')) {
+      score = 5;
+      confidence = 'HIGH';
+    } else if (rating.includes('good')) {
+      score = 4;
+      confidence = 'HIGH';
+    } else if (rating.includes('requires improvement') || rating.includes('satisfactory')) {
+      score = 2;
+      confidence = 'HIGH';
+      dataPoints.push('⚠️ School requires improvement');
+    } else if (rating.includes('inadequate') || rating.includes('serious weaknesses') || rating.includes('special measures')) {
+      score = 1;
+      confidence = 'HIGH';
+      dataPoints.push('🚨 Inadequate rating - high regulatory risk');
+    } else {
+      // Unknown rating format
+      score = 3;
+      confidence = 'LOW';
+    }
+  }
+
+  // Check inspection date recency
+  if (ofstedDate) {
+    const inspDate = new Date(ofstedDate);
+    const now = new Date();
+    const yearsSince = (now.getTime() - inspDate.getTime()) / (1000 * 60 * 60 * 24 * 365);
+
+    if (yearsSince > 5) {
+      dataPoints.push(`⚠️ Inspection data is ${Math.round(yearsSince)} years old`);
+      if (score !== null && confidence === 'HIGH') {
+        confidence = 'MEDIUM';
+      }
+    }
+  }
+
+  const rationale = score !== null
+    ? `Ofsted rating: ${ofstedRating || 'Unknown'}. ${inspectorate === 'Ofsted' ? 'State-inspected.' : inspectorate ? `Inspected by ${inspectorate}.` : ''}`
+    : 'No Ofsted rating available. Manual assessment required.';
 
   return { score, confidence, rationale, dataPoints };
 }
@@ -323,6 +412,7 @@ function scoreReputation(school: SchoolData): AutoScore {
 export async function runAutoAssessment(urn: string): Promise<AssessmentData> {
   const errors: string[] = [];
   let school: SchoolData | null = null;
+  let gias: GIASSchool | null = null;
   let la: any = null;
   let company: any = null;
   let officers: any = null;
@@ -332,10 +422,20 @@ export async function runAutoAssessment(urn: string): Promise<AssessmentData> {
     school = await getSchoolByUrn(urn);
     if (!school) {
       errors.push('School not found in database');
-      return { school: null, la: null, company: null, officers: null, scores: emptyScores(), loading: false, errors };
+      return { school: null, gias: null, la: null, company: null, officers: null, scores: emptyScores(), loading: false, errors };
     }
   } catch (e: any) {
     errors.push(`School fetch error: ${e.message}`);
+  }
+
+  // Step 1b: Get GIAS data for Ofsted ratings
+  try {
+    const giasResults = await searchSchools(urn);
+    if (giasResults.length > 0) {
+      gias = giasResults[0];
+    }
+  } catch (e: any) {
+    errors.push(`GIAS fetch error: ${e.message}`);
   }
 
   // Step 2: Get LA data (parallel with Companies House)
@@ -370,6 +470,7 @@ export async function runAutoAssessment(urn: string): Promise<AssessmentData> {
   // Step 3: Calculate scores
   const scores: AutoScores = {
     commissioningDemand: school && la ? scoreCommissioningDemand(school, la) : emptyScore(),
+    ofstedRating: school ? scoreOfstedRating(school, gias) : emptyScore(),
     financialHealth: school ? scoreFinancialHealth(school) : emptyScore(),
     buildingCondition: school ? scoreBuildingCondition(school) : emptyScore(),
     staffingLeadership: school ? scoreStaffingLeadership(school) : emptyScore(),
@@ -379,5 +480,5 @@ export async function runAutoAssessment(urn: string): Promise<AssessmentData> {
     synergy: emptyScore(), // Always manual
   };
 
-  return { school, la, company, officers, scores, loading: false, errors };
+  return { school, gias, la, company, officers, scores, loading: false, errors };
 }

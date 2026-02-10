@@ -9,11 +9,11 @@ import {
 } from 'firebase/auth';
 import { auth } from '../firebase';
 
-const SUPER_ADMIN_EMAILS = [
-  'noahprice1@gmail.com',
-  'noah.price@isf.ltd',
-  'martyn.ward@isf.ltd',
-];
+// Load super admin emails from environment variable
+const SUPER_ADMIN_EMAILS = (import.meta.env.VITE_SUPER_ADMIN_EMAILS || '')
+  .split(',')
+  .map((email: string) => email.trim())
+  .filter((email: string) => email.length > 0);
 
 interface AuthContextType {
   user: User | null;

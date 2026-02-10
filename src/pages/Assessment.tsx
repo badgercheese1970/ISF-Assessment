@@ -9,6 +9,7 @@ import { collection, addDoc } from 'firebase/firestore';
 
 const CRITERIA_MAP: { key: keyof typeof emptyScoresRef; label: string; weight: number }[] = [
   { key: 'commissioningDemand', label: 'Commissioning Demand', weight: 3 },
+  { key: 'ofstedRating', label: 'Ofsted Rating', weight: 2 },
   { key: 'financialHealth', label: 'Financial Health', weight: 2 },
   { key: 'buildingCondition', label: 'Building Condition', weight: 2 },
   { key: 'staffingLeadership', label: 'Staffing/Leadership', weight: 2 },
@@ -142,11 +143,11 @@ export default function Assessment() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-10 h-10 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Running assessment...</p>
-          <p className="text-sm text-gray-400 mt-1">Fetching school data, LA metrics, Companies House...</p>
+          <Loader2 className="w-10 h-10 animate-spin text-cyan-500 mx-auto mb-4" />
+          <p className="text-slate-300">Running assessment...</p>
+          <p className="text-sm text-slate-400 mt-1">Fetching school data, LA metrics, Companies House...</p>
         </div>
       </div>
     );
@@ -154,10 +155,10 @@ export default function Assessment() {
 
   if (!data?.school) {
     return (
-      <div className="min-h-screen bg-gray-50 p-8">
+      <div className="min-h-screen bg-slate-900 p-8">
         <div className="max-w-4xl mx-auto text-center">
-          <p className="text-red-600 mb-4">School not found (URN: {urn})</p>
-          <button onClick={() => navigate('/')} className="text-blue-600 hover:underline">← Back to search</button>
+          <p className="text-red-400 mb-4">School not found (URN: {urn})</p>
+          <button onClick={() => navigate('/')} className="text-cyan-400 hover:text-cyan-300 transition-colors">← Back to search</button>
         </div>
       </div>
     );
@@ -170,16 +171,16 @@ export default function Assessment() {
   const contact = school.contact as any || {};
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
-          <button onClick={() => navigate('/')} className="p-2 hover:bg-gray-200 rounded-lg transition-colors">
+          <button onClick={() => navigate('/')} className="p-2 hover:bg-slate-800 text-slate-400 hover:text-slate-300 rounded-lg transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{school.name as string}</h1>
-            <p className="text-sm text-gray-500">
+            <h1 className="text-2xl font-bold text-white">{school.name as string}</h1>
+            <p className="text-sm text-slate-400">
               URN: {school.urn as string} · {school.type as string} · {location.town}, {location.postcode}
             </p>
           </div>
@@ -235,6 +236,25 @@ export default function Assessment() {
                   <span className="text-gray-500">Group</span>
                   <p className="font-semibold">{school.group_name as string || '—'}</p>
                 </div>
+                {data.gias?.OfstedRating && (
+                  <div className="col-span-2 md:col-span-3">
+                    <span className="text-gray-500">Ofsted Rating</span>
+                    <p className="font-semibold text-lg">
+                      {data.gias.OfstedRating}
+                      {data.gias.OfstedLastInsp && (
+                        <span className="text-sm text-gray-500 ml-2">
+                          (Last inspection: {data.gias.OfstedLastInsp})
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                )}
+                {data.gias?.InspectorateName && !data.gias?.OfstedRating && (
+                  <div className="col-span-2 md:col-span-3">
+                    <span className="text-gray-500">Inspectorate</span>
+                    <p className="font-semibold">{data.gias.InspectorateName}</p>
+                  </div>
+                )}
                 {ht && (
                   <div>
                     <span className="text-gray-500">{ht.preferred_job_title || 'Head'}</span>

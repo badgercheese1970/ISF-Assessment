@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Loader2, Building2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -27,24 +27,28 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Building2 className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900">ISF School Assessment</h1>
-          <p className="text-gray-500 mt-1">Sign in to continue</p>
+          <img
+            src="/logo.png"
+            alt="Independent Schools Futures"
+            className="w-32 h-auto mx-auto mb-6"
+          />
+          <h1 className="text-2xl font-bold text-white">ISF School Assessment Tool</h1>
+          <p className="text-slate-400 mt-2">Sign in to access school evaluation system</p>
         </div>
 
-        <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+        <div className="bg-slate-800 p-8 rounded-xl shadow-xl border border-slate-700">
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-600 text-sm">{error}</p>
+            <div className="mb-4 p-3 bg-red-900/20 border border-red-500/30 rounded-lg">
+              <p className="text-red-400 text-sm">{error}</p>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-1">
                 Email
               </label>
               <input
@@ -53,14 +57,14 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none placeholder-slate-400"
                 placeholder="you@isf.ltd"
                 disabled={loading}
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-1">
                 Password
               </label>
               <input
@@ -69,7 +73,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none placeholder-slate-400"
                 placeholder="••••••••"
                 disabled={loading}
               />
@@ -78,7 +82,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full py-3 bg-cyan-600 text-white font-medium rounded-lg hover:bg-cyan-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-cyan-900/30"
             >
               {loading ? (
                 <>
@@ -91,10 +95,10 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-gray-100 text-center">
-            <p className="text-sm text-gray-400">
+          <div className="mt-6 pt-6 border-t border-slate-700 text-center">
+            <p className="text-sm text-slate-400">
               Need access? Contact{' '}
-              <a href="mailto:noah.price@isf.ltd" className="text-blue-600 hover:text-blue-700">
+              <a href="mailto:noah.price@isf.ltd" className="text-cyan-400 hover:text-cyan-300 transition-colors">
                 noah.price@isf.ltd
               </a>
             </p>
