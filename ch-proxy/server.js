@@ -1,7 +1,14 @@
 const express = require('express');
 const cors = require('cors');
+require('dotenv').config(); // Load from .env.local
 
-const CH_API_KEY = '25a59c7c-1311-4a91-a4c6-fe92c543bcfe';
+const CH_API_KEY = process.env.CH_API_KEY;
+if (!CH_API_KEY) {
+  console.error('ERROR: CH_API_KEY environment variable not set');
+  console.error('Set it in .env.local or run: CH_API_KEY=your_key node ch-proxy/server.js');
+  process.exit(1);
+}
+
 const CH_BASE = 'https://api.company-information.service.gov.uk';
 const PORT = 3847;
 

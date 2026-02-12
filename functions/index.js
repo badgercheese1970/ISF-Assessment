@@ -1,7 +1,10 @@
 const { onRequest } = require("firebase-functions/v2/https");
+const { defineSecret } = require("firebase-functions/params");
 const fetch = require("node-fetch");
 
-const CH_API_KEY = "25a59c7c-1311-4a91-a4c6-fe92c543bcfe";
+// Use Firebase Functions secrets/config
+// Set with: firebase functions:secrets:set CH_API_KEY
+const chApiKeySecret = defineSecret("CH_API_KEY");
 const CH_BASE = "https://api.company-information.service.gov.uk";
 
 const ALLOWED_ORIGINS = [
@@ -24,8 +27,9 @@ function getCorsHeaders(req) {
 
 // Proxy for Companies House API
 exports.companiesHouse = onRequest(
-  { region: "europe-west2", cors: false },
+  { region: "europe-west2", cors: false, secrets: [chApiKeySecret] },
   async (req, res) => {
+    const CH_API_KEY = chApiKeySecret.value();
     const corsHeaders = getCorsHeaders(req);
 
     // Handle preflight

@@ -407,15 +407,19 @@ VITE_FIREBASE_AUTH_DOMAIN=phoenix-education-123.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=phoenix-education-123
 
 # Companies House API
-VITE_COMPANIES_HOUSE_API_KEY=25a59c7c-1311-4a91-a4c6-fe92c543bcfe
+VITE_COMPANIES_HOUSE_API_KEY=your_companies_house_api_key_here
 
 # Super Admin Emails (comma-separated)
 VITE_SUPER_ADMIN_EMAILS=noahprice1@gmail.com,noah.price@isf.ltd,martyn.ward@isf.ltd
 ```
 
-For Firebase Functions:
+For Firebase Functions (use secrets for security):
 ```bash
-firebase functions:config:set companies_house.api_key="25a59c7c-1311-4a91-a4c6-fe92c543bcfe"
+# Modern approach using secrets (recommended)
+firebase functions:secrets:set CH_API_KEY
+
+# Legacy approach using config
+firebase functions:config:set companies_house.api_key="your_companies_house_api_key_here"
 ```
 
 ## Custom Domain Configuration

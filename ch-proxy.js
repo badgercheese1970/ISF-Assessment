@@ -1,11 +1,21 @@
 /**
  * Lightweight Companies House CORS proxy
  * Runs on port 3456, proxies requests to the CH API
+ *
+ * REQUIRES: CH_API_KEY environment variable
+ * Usage: CH_API_KEY=your_key node ch-proxy.js
  */
 const http = require('http');
 const https = require('https');
+require('dotenv').config(); // Load from .env.local
 
-const CH_API_KEY = '25a59c7c-1311-4a91-a4c6-fe92c543bcfe';
+const CH_API_KEY = process.env.CH_API_KEY;
+if (!CH_API_KEY) {
+  console.error('ERROR: CH_API_KEY environment variable not set');
+  console.error('Set it in .env.local or run: CH_API_KEY=your_key node ch-proxy.js');
+  process.exit(1);
+}
+
 const PORT = 3456;
 
 const ALLOWED_ORIGINS = [

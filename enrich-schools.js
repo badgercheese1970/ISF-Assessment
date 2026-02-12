@@ -1,30 +1,52 @@
 /**
  * Enrich independent_schools Firestore docs with Companies House data.
  * Runs server-side, writes to Firestore subcollection assess_ch_cache.
- * 
+ *
+ * REQUIRES environment variables:
+ *   - FIREBASE_API_KEY: Firebase Web API key
+ *   - CH_API_KEY: Companies House API key
+ *   - FIREBASE_USER_EMAIL: Email for Firebase authentication
+ *   - FIREBASE_USER_PASSWORD: Password for Firebase authentication
+ *
  * Usage: node enrich-schools.js [urn]
  *   If URN provided, enriches just that school.
  *   Otherwise enriches all schools with company numbers.
  */
 
-const API_KEY = 'AIzaSyAZEQyzxp21CqFCEYIBXsODeWlT9Usf0l0';
-const CH_API_KEY = '25a59c7c-1311-4a91-a4c6-fe92c543bcfe';
+require('dotenv').config(); // Load from .env.local
+
+const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY;
+const CH_API_KEY = process.env.CH_API_KEY;
+const FIREBASE_USER_EMAIL = process.env.FIREBASE_USER_EMAIL;
+const FIREBASE_USER_PASSWORD = process.env.FIREBASE_USER_PASSWORD;
 const PROJECT_ID = 'phoenix-education-123';
+
+// Validate required environment variables
+if (!FIREBASE_API_KEY || !CH_API_KEY || !FIREBASE_USER_EMAIL || !FIREBASE_USER_PASSWORD) {
+  console.error('ERROR: Missing required environment variables');
+  console.error('Required: FIREBASE_API_KEY, CH_API_KEY, FIREBASE_USER_EMAIL, FIREBASE_USER_PASSWORD');
+  console.error('Set them in .env.local file');
+  process.exit(1);
+}
 
 async function getAuthToken() {
   const res = await fetch(
-    `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${API_KEY}`,
+    `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_API_KEY}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        email: 'noah.price@isf.ltd',
-        password: 'Plop!890',
+        email: FIREBASE_USER_EMAIL,
+        password: FIREBASE_USER_PASSWORD,
         returnSecureToken: true,
       }),
     }
   );
   const data = await res.json();
+  if (!data.idToken) {
+    console.error('Authentication failed:', data.error?.message || 'Unknown error');
+    process.exit(1);
+  }
   return data.idToken;
 }
 

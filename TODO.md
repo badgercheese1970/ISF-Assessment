@@ -597,9 +597,10 @@ export const companiesHouseProxy = functions
   });
 ```
 
-2. Set Firebase function config:
+2. Set Firebase function secret (recommended for security):
 ```bash
-firebase functions:config:set companies_house.api_key="25a59c7c-1311-4a91-a4c6-fe92c543bcfe"
+firebase functions:secrets:set CH_API_KEY
+# When prompted, enter your Companies House API key
 ```
 
 3. Update `src/services/companies-house.ts` to call Cloud Function:
